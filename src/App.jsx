@@ -1,56 +1,46 @@
-import { useSelector, useDispatch } from 'react-redux'
-import { useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux';
+import { voteAnecdote, addAnecdote } from './reducers/anecdoteReducer';
 
 const App = () => {
-  const anecdotes = useSelector(state => state)
-  const dispatch = useDispatch()
-  const [newAnecdote, setNewAnecdote] = useState('')
+  const anecdotes = useSelector((state) =>
+    state.slice().sort((a, b) => b.votes - a.votes)
+  );
+  const dispatch = useDispatch();
 
   const vote = (id) => {
-    dispatch({
-      type: 'VOTE',
-      payload: id
-    })
-  }
+    dispatch(voteAnecdote(id));
+  };
 
   const createAnecdote = (event) => {
     event.preventDefault();
-    if (newAnecdote.trim() === '') return;// Check if the input is empty or consists of only spaces
-    // Dispatch the action to add a new anecdote
-    dispatch({
-      type: 'CREATE',
-      payload: newAnecdote,
-    });
-    setNewAnecdote(''); // Clear the input field
+    const content = event.target.anecdote.value.trim();
+    if (content) {
+      dispatch(addAnecdote(content));
+      event.target.anecdote.value = ''; // Clear the input field
+    }
   };
 
   return (
     <div>
       <h2>Anecdotes</h2>
-      {anecdotes
-        .slice() // Make a copy to avoid mutating the original state
-        .sort((a, b) => b.votes - a.votes) // Sort by votes in descending order
-        .map((anecdote) => (
-          <div key={anecdote.id}>
-            <div>{anecdote.content}</div>
-            <div>
-              has {anecdote.votes}
-              <button onClick={() => vote(anecdote.id)}>vote</button>
-            </div>
+      {anecdotes.map((anecdote) => (
+        <div key={anecdote.id}>
+          <div>{anecdote.content}</div>
+          <div>
+            has {anecdote.votes}
+            <button onClick={() => vote(anecdote.id)}>vote</button>
           </div>
-        ))}
-      <h2>create new</h2>
+        </div>
+      ))}
+      <h2>Create New</h2>
       <form onSubmit={createAnecdote}>
         <div>
-          <input
-            value={newAnecdote}
-            onChange={(e) => setNewAnecdote(e.target.value)}
-          />
+          <input name="anecdote" />
         </div>
         <button type="submit">create</button>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
